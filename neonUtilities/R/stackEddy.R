@@ -28,10 +28,13 @@
 #' License: GNU AFFERO GENERAL PUBLIC LICENSE Version 3, 19 November 2007
 
 #' @export
+#' @importFrom R.utils gunzip
 
 # changelog and author contributions / copyrights
 #   Claire Lunch (2019-05-29)
 #     partially adapted from eddy4R.base::def.hdf5.extr() authored by David Durden
+#   Rich Fiorella (2020-10-26)
+#     gunzip hdf5 files when unzipping archive, if necessary
 ##############################################################################################
 
 stackEddy <- function(filepath, level="dp04", var=NA, avg=NA) {
@@ -70,6 +73,17 @@ stackEddy <- function(filepath, level="dp04", var=NA, avg=NA) {
     for(i in 1:length(files)) {
       utils::unzip(paste(filepath, files[i], sep="/"), exdir=filepath)
     }
+    files <- list.files(filepath, recursive=F)
+  }
+
+  # check to see if unzipped files are still gz - RPF
+  files_tmp <- files[grep(".gz", files)]
+
+  if (length(files_tmp) > 0) {
+    lapply(files_tmp,function(x){
+      R.utils::gunzip(paste0(paste(filepath, x, sep="/")))})
+    
+    # refresh files variable
     files <- list.files(filepath, recursive=F)
   }
   
